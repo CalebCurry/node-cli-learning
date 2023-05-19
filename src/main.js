@@ -19,7 +19,7 @@ function openShortcut(shortcut) {
         browser = 'google chrome';
     }
 
-    open(url, { app: { name: 'google chrome' } });
+    open(url, { app: { name: browser } });
 }
 
 function displayUsage() {
