@@ -1,12 +1,8 @@
-const { exec } = require('child_process');
+import open from 'open';
 
-function displayUsage() {
-    console.log('open <shortcut>      : Open a saved shortcut.');
-    console.log('add <shortcut> <url> : add a new shortcut to some URL.');
-    console.log('rm <shortcut>        : remove a saved shortcut.');
-}
+function openShortcut(shortcut) {
+    const browser = process.env.BROWSER.toLocaleLowerCase();
 
-function open(shortcut) {
     let url;
     if (shortcut === 'goog') {
         url = 'https://google.com';
@@ -18,38 +14,19 @@ function open(shortcut) {
         console.log('Shortcut', shortcut, 'does not exist.');
         return;
     }
-    console.log('opening', url);
-    let command;
-    switch (process.platform) {
-        case 'darwin':
-            command = `open -a "Google Chrome" ${url}`;
-            break;
-        case 'win32':
-            command = `start chrome ${url}`;
-            break;
-        case 'linux':
-            command = `google-chrome ${url}`;
-            break;
-        default:
-            console.log('Unsupported platform');
-            return;
+
+    if (browser === 'chome' || browser == 'google') {
+        browser = 'google chrome';
     }
 
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.log('error:', error.message);
-        }
-        if (stderr) {
-            console.log('stderr:', stderr);
-        }
-        if (error || stderr) {
-            return;
-        }
-
-        console.log(stdout);
-    });
+    open(url, { app: { name: 'google chrome' } });
 }
 
+function displayUsage() {
+    console.log('open <shortcut>      : Open a saved shortcut.');
+    console.log('add <shortcut> <url> : add a new shortcut to some URL.');
+    console.log('rm <shortcut>        : remove a saved shortcut.');
+}
 function add(shortcut, url) {
     console.log('adding', shortcut, url);
 }
@@ -68,7 +45,7 @@ if (!command || !shortcut || command === 'help') {
 } else {
     switch (command) {
         case 'open':
-            open(shortcut);
+            openShortcut(shortcut);
             break;
         case 'add':
             if (!url) {

@@ -6,10 +6,12 @@
     "scripts": {
         "start": "node src/main.js"
     },
+    "type": "module",
     "keywords": [],
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "command-exists": "^1.2.9",
         "open": "^9.1.0"
     }
 }
