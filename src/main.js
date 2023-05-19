@@ -1,4 +1,4 @@
-import open from 'open';
+import open, { apps } from 'open';
 
 function openShortcut(shortcut) {
     const browser = process.env.BROWSER.toLocaleLowerCase();
@@ -15,11 +15,21 @@ function openShortcut(shortcut) {
         return;
     }
 
-    if (browser === 'chome' || browser == 'google') {
-        browser = 'google chrome';
+    let appName = browser; // allows you to use safari or others
+
+    switch (browser) {
+        case 'chrome':
+            appName = apps.chrome;
+            break;
+        case 'edge':
+            appName = apps.edge;
+            break;
+        case 'firefox':
+            appName = apps.firefox;
+            break;
     }
 
-    open(url, { app: { name: browser } });
+    open(url, { app: { name: appName } });
 }
 
 function displayUsage() {
