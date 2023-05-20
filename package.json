@@ -11,7 +11,10 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "better-sqlite3": "^8.3.0",
         "command-exists": "^1.2.9",
-        "open": "^9.1.0"
+        "dotenv": "^16.0.3",
+        "open": "^9.1.0",
+        "sqlite3": "^5.1.6"
     }
 }

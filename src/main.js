@@ -1,22 +1,43 @@
 import open, { apps } from 'open';
+import sqlite from 'better-sqlite3';
+import dotenv from 'dotenv';
+import fs from 'fs';
 
-function openShortcut(shortcut) {
-    const browser = process.env.BROWSER.toLocaleLowerCase();
+dotenv.config();
+let db;
+const dbFilePath = './shortcuts.db';
 
-    let url;
-    if (shortcut === 'goog') {
-        url = 'https://google.com';
-    } else if (shortcut === 'social') {
-        url = 'https://twitter.com';
-    } else if (shortcut === 'code') {
-        url = 'https://leetcode.com';
-    } else {
-        console.log('Shortcut', shortcut, 'does not exist.');
-        return;
-    }
+function init() {
+    console.log('initializing database.');
+    db = new sqlite('./shortcuts.db');
 
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS shortcuts (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        url TEXT NOT NULL
+      )
+    `;
+
+    db.exec(createTableQuery);
+
+    const data = [
+        { name: 'goog', url: 'https://google.com' },
+        { name: 'social', url: 'https://twitter.com' },
+        { name: 'news', url: 'https://yahoo.com' },
+    ];
+
+    const insertData = db.prepare(
+        'INSERT INTO shortcuts (name, url) VALUES (?, ?)'
+    );
+    data.forEach((shortcut) => {
+        insertData.run(shortcut.name, shortcut.url);
+    });
+}
+
+function checkBrowser() {
+    const browser = process.env?.BROWSER?.toLocaleLowerCase();
     let appName = browser; // allows you to use safari or others
-
     switch (browser) {
         case 'chrome':
             appName = apps.chrome;
@@ -28,21 +49,54 @@ function openShortcut(shortcut) {
             appName = apps.firefox;
             break;
     }
-
-    open(url, { app: { name: appName } });
+    return appName;
 }
+function openShortcut(shortcut) {
+    const row = db
+        .prepare('SELECT * FROM shortcuts WHERE name = ?')
+        .get(shortcut);
+    if (!row) {
+        console.log('Shortcut', shortcut, 'does not exist.');
+        return;
+    }
 
+    const url = row.url;
+    const browser = checkBrowser();
+
+    if (browser) {
+        open(url, { app: { name: browser } });
+    } else {
+        open(url);
+    }
+}
 function displayUsage() {
     console.log('open <shortcut>      : Open a saved shortcut.');
     console.log('add <shortcut> <url> : add a new shortcut to some URL.');
     console.log('rm <shortcut>        : remove a saved shortcut.');
 }
+
+function ls() {
+    const rows = db.prepare('SELECT * FROM shortcuts').all();
+    console.log('All shortcuts:');
+    rows.forEach((row) => console.log(`${row.name}: ${row.url}`));
+}
+
 function add(shortcut, url) {
-    console.log('adding', shortcut, url);
+    db.prepare(
+        'INSERT OR REPLACE INTO shortcuts (name, url) VALUES (?, ?)'
+    ).run(shortcut, url);
+    console.log('Added', shortcut, url);
 }
 
 function rm(shortcut) {
-    console.log('removing', shortcut);
+    db.prepare('DELETE FROM shortcuts WHERE name = ?').run(shortcut);
+    console.log('Removed', shortcut);
+}
+
+if (!fs.existsSync(dbFilePath)) {
+    init();
+} else {
+    db = new sqlite(dbFilePath);
 }
 
 const args = process.argv.slice(2);
@@ -50,24 +104,35 @@ const command = args[0];
 const shortcut = args[1];
 const url = args[2];
 
-if (!command || !shortcut || command === 'help') {
+const argCount = args.length;
+
+if (args.length == 0 || !['ls', 'open', 'rm', 'add'].includes(command)) {
     displayUsage();
-} else {
-    switch (command) {
-        case 'open':
-            openShortcut(shortcut);
-            break;
-        case 'add':
-            if (!url) {
-                displayUsage();
-            }
-            add(shortcut, url);
-            break;
-        case 'rm':
-            rm(shortcut);
-            break;
-        default:
+    process.exit(1);
+}
+switch (command) {
+    case 'ls':
+        ls();
+        break;
+    case 'open':
+        if (argCount < 2) {
             displayUsage();
             break;
-    }
+        }
+        openShortcut(shortcut);
+        break;
+    case 'rm':
+        if (argCount < 2) {
+            displayUsage();
+            break;
+        }
+        rm(shortcut);
+        break;
+    case 'add':
+        if (argCount < 3) {
+            displayUsage();
+            break;
+        }
+        add(shortcut, url);
+        break;
 }
