@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import open, { apps } from 'open';
 import sqlite from 'better-sqlite3';
 import dotenv from 'dotenv';
@@ -70,6 +71,7 @@ function openShortcut(shortcut) {
     }
 }
 function displayUsage() {
+    console.log('ls                   : List all saved shortcut.');
     console.log('open <shortcut>      : Open a saved shortcut.');
     console.log('add <shortcut> <url> : add a new shortcut to some URL.');
     console.log('rm <shortcut>        : remove a saved shortcut.');
