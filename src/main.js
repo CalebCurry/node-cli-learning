@@ -105,36 +105,21 @@ const args = process.argv.slice(2);
 const command = args[0];
 const shortcut = args[1];
 const url = args[2];
+const commands = {
+    ls: { f: ls, argCount: 0 },
+    open: { f: openShortcut, argCount: 1 },
+    rm: { f: rm, argCount: 1 },
+    add: { f: add, argCount: 2 },
+};
 
 const argCount = args.length;
 
-if (args.length == 0 || !['ls', 'open', 'rm', 'add'].includes(command)) {
+if (
+    argCount === 0 ||
+    !commands[command] ||
+    argCount < commands[command].argCount
+) {
     displayUsage();
-    process.exit(1);
-}
-switch (command) {
-    case 'ls':
-        ls();
-        break;
-    case 'open':
-        if (argCount < 2) {
-            displayUsage();
-            break;
-        }
-        openShortcut(shortcut);
-        break;
-    case 'rm':
-        if (argCount < 2) {
-            displayUsage();
-            break;
-        }
-        rm(shortcut);
-        break;
-    case 'add':
-        if (argCount < 3) {
-            displayUsage();
-            break;
-        }
-        add(shortcut, url);
-        break;
+} else {
+    commands[command].f(shortcut, url);
 }

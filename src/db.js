@@ -32,11 +32,12 @@ data.forEach((shortcut) => {
 // const tables = db.prepare(queryTables).all();
 // console.log(tables);
 
-const shortcuts = db
-    .prepare('SELECT * FROM shortcuts WHERE name = ?')
-    .all('social');
+// const shortcuts = db
+//     .prepare('SELECT * FROM shortcuts WHERE name = ?')
+//     .all('social');
 
-console.log(shortcuts);
-const result = db.prepare('DELETE FROM shortcuts WHERE id = ?').run('48');
-console.log(result.changes);
+// console.log(shortcuts);
+// const result = db.prepare('DELETE FROM shortcuts WHERE id = ?').run('48');
+// console.log(result.changes);
+
 db.close();
